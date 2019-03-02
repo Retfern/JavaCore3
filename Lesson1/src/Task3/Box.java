@@ -3,16 +3,21 @@ package Task3;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Box <E extends Fruit & Comparable> {
+public class Box <E extends Fruit> {
     private int numberFruit;
     private E nameFruit;
-    private  List<Float> boxFruit;
+    private  List<E> boxFruit;
 
     public Box (E nameFruit, int numberFruit) {
-        this.numberFruit=numberFruit;
-        this.nameFruit=nameFruit;
-        boxFruit = new ArrayList<>();
-        addArray(numberFruit);
+
+        if (numberFruit>=0) {
+            this.numberFruit=numberFruit;
+            boxFruit = new ArrayList<>();
+            this.nameFruit=nameFruit;
+            addArray(numberFruit);
+        }else {
+            System.out.println("Количество фруктов должно быть целым числом больше нуля");
+        }
     }
 
     private E getNameFruit () {
@@ -25,28 +30,22 @@ public class Box <E extends Fruit & Comparable> {
 
     private void addArray (int numbers) {
         for (int i=0; i<numbers; i++) {
-            boxFruit.add(nameFruit.getWeight());
+            boxFruit.add(nameFruit);
         }
     }
 
     public void intersperse (Box newBox) { //пересыпаем в эту коробку из коробки в параметрах
 
-        addFruit(newBox.getNameFruit(), newBox.getNumberFruit());
-        if (compareFruit (newBox.getNameFruit())) {newBox.removeFruit(newBox.getNumberFruit());}
+        addFruit((E)newBox.getNameFruit(), newBox.getNumberFruit());
+        if (compareFruit ((E)newBox.getNameFruit())) {newBox.removeFruit();}
     }
 
-    private void removeFruit(int numbers){
-        if ((numbers>=0)&(numbers<=numberFruit)) {
-            for (int i=0; i<numbers; i++) {
-                boxFruit.remove(nameFruit.getWeight());
-                numberFruit--;
-            }
-        }else {
-            System.out.println("Введите корректное число удалённых фруктов, текущее количество фруктов в коробке " + numberFruit);
-        }
+    private void removeFruit(){
+        boxFruit.clear();
+        numberFruit=0;
     }
 
-    public void addFruit (Fruit newFruit, int numbers){
+    public void addFruit (E newFruit, int numbers){
         if (compareFruit(newFruit)) {
             addArray(numbers);
             numberFruit=numberFruit+numbers;
@@ -60,21 +59,22 @@ public class Box <E extends Fruit & Comparable> {
     }
 
     public void compareBox (Box newBox) {
-        if (newBox.getWeightBox()==getWeightBox()) {
+
+        if (Math.abs(this.getWeightBox() - newBox.getWeightBox()) < 0.0001) {
             System.out.println("Массы коробок равны");
         }else {
             System.out.println("Массы коробок не равны");
         }
     }
 
-    private boolean compareFruit (Fruit newFruit) {
+    private boolean compareFruit (E newFruit) {
        return nameFruit.equals(newFruit);
     }
 
     public void printBoxFruit () {
         System.out.println(nameFruit.getClass().getName());
-        System.out.print(boxFruit);
-        System.out.println(" ");
+        System.out.println(numberFruit);
+
     }
 
 
