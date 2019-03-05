@@ -92,15 +92,7 @@ public class MainWindow extends JFrame implements MessageSender {
             public void actionPerformed(ActionEvent e) {
                 RenameWindow renameWindow = new RenameWindow(MainWindow.this, network);
                 renameWindow.setVisible(true);
-                if (!renameWindow.isConnected()) {
-                    System.exit(0);
-                }
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        setTitle("Сетевой чат. Пользователь " + network.getUsername());
-                    }
-                });
+
             }
         });
 
@@ -155,7 +147,15 @@ public class MainWindow extends JFrame implements MessageSender {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+
                 userListModel.addElement(name);
+                setTitle("Сетевой чат. Пользователь " + network.getUsername());
+
+                System.out.println("Сейчас в листе следующие имена:");
+                for (int i=0; i<userListModel.size(); i++){
+                    System.out.println(userListModel.get(i));
+                }
+                System.out.println("Сейчас в network имя:"+network.getUsername());
             }
         });
     }
@@ -166,6 +166,12 @@ public class MainWindow extends JFrame implements MessageSender {
             @Override
             public void run() {
                 userListModel.removeElement(name);
+
+                System.out.println("Сейчас в листе следующие имена:");
+                for (int i=0; i<userListModel.size(); i++){
+                    System.out.println(userListModel.get(i));
+                }
+                System.out.println("Сейчас в network имя:"+network.getUsername());
             }
         });
     }

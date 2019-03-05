@@ -23,7 +23,7 @@ public class Network implements Closeable {
     private final MessageSender messageSender;
     private final Thread receiver;
     private String username;
-
+    private String newUsername;
     private final String hostName;
     private final int port;
 
@@ -47,7 +47,7 @@ public class Network implements Closeable {
                         System.out.println("New message " + text);
                         Matcher matcher = MESSAGE_PATTERN.matcher(text);
                         if (matcher.matches()) {
-                            Message msg = new Message(matcher.group(1), username,
+                            Message msg = new Message(matcher.group(1), getUsername(),
                                       matcher.group(2));
                             messageSender.submitMessage(msg);
                         } else if (text.startsWith(USER_LIST_PATTERN)) {
@@ -63,15 +63,14 @@ public class Network implements Closeable {
                                 System.out.println("Ошибка данных");
                             }
                         }else if (text.startsWith("/rename successful")){
-                            String [] arrMsg = text.split("\\s", 3);
-                            username = arrMsg[2];
-
+                            username = newUsername;
+                            System.out.println("response: "+text);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                System.out.printf("Network connection is closed for user %s%n", username);
+                System.out.printf("Network connection is closed for user %s%n", getUsername());
             }
         });
     }
@@ -108,12 +107,8 @@ public class Network implements Closeable {
 
     public void renameUser (String newName, String password) throws IOException{
         out.writeUTF(String.format(RENAME_PATTERN, newName, password));
-        String response = in.readUTF();
-        if (response.equals("/rename successful")) {
-            this.username = newName;
-        } else {
-            throw new AuthException();
-        }
+        this.newUsername=newName;
+
     }
 
     public String getUsername() {

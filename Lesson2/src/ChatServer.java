@@ -73,18 +73,7 @@ public class ChatServer {
                             out.flush();
                             socket.close();
                         }
-                    } /*else if (matchRename.matches()) {
-                        String newName = matchRename.group(1);
-                        String password = matchRename.group(2);
-                        String name = matchRename.group(3);
-                        if (authService.renameUser(name, newName, password)) {
-                            renameUser(name, newName);
-                            out.writeUTF("/rename successful "+newName);
-                            out.flush();
-
-                        }
-
-                    } */else {
+                    } else {
                         System.out.printf("Incorrect authorization message %s%n", authMessage);
                         out.writeUTF("/auth fails");
                         out.flush();
@@ -120,7 +109,7 @@ public class ChatServer {
         broadcastUserDisconnected(clientHandler.getUsername());
     }
 
-    public void broadcastUserConnected(String username) throws IOException {
+    public  void broadcastUserConnected(String username) throws IOException {
         // TODO сообщать о том, что конкретный пользователь подключился
         for (String s: getUserList()) {
 
@@ -133,32 +122,47 @@ public class ChatServer {
         }
     }
 
-    public void broadcastUserDisconnected(String username) throws IOException {
+    public  void renameUserInList (String username)throws IOException {
+        for (String s: getUserList()) {
+            clientHandlerMap.get(s).sendUserList("in", username);
+        }
+    }
+
+
+    public  void broadcastUserDisconnected(String username) throws IOException {
         // TODO сообщать о том, что конкретный пользователь отключился
         for (String s: getUserList()) {
-            if (!username.equals(s)){
+            System.out.println("Удалён "+username);
+            clientHandlerMap.get(s).sendUserList("out", username);
+
+            /*if (!username.equals(s)){
                 System.out.println("Удалён "+username);
                 clientHandlerMap.get(s).sendUserList("out", username);
-            }
+            }*/
         }
     }
 
 
-    public void renameUser (String username, String newName) throws IOException {
+    public  void renameUser (String username, String newName) throws IOException {
         ClientHandler userClientHandler = clientHandlerMap.get(username);
         userClientHandler.setUsername(newName);
+        System.out.println("В ClientHandler имя "+userClientHandler.getUsername());
         broadcastUserDisconnected(username);
         clientHandlerMap.put(newName, userClientHandler);
+
         for (String s: getUserList()) {
             System.out.println("В мапе "+s);
         }
+
         clientHandlerMap.remove(username);
 
-        broadcastUserConnected(newName);
+        renameUserInList(newName);
+
         for (String s: getUserList()) {
             System.out.println("В мапе "+s);
         }
-
-
     }
+
+
+
 }

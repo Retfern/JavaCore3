@@ -38,30 +38,36 @@ public class ClientHandler {
                 try {
                     while (!Thread.currentThread().isInterrupted()) {
                         String msg = inp.readUTF();
-                        System.out.printf("Message from user %s: %s%n", username, msg);
+                        System.out.printf("Message from user %s: %s%n", getUsername(), msg);
 
                         Matcher matcher = MESSAGE_PATTERN.matcher(msg);
                         Matcher matchRename = RENAME_PATTERN.matcher(msg);
                         if (matcher.matches()) {
                             String userTo = matcher.group(1);
                             String message = matcher.group(2);
-                            server.sendMessage(userTo, username, message);
+                            server.sendMessage(userTo, getUsername(), message);
                         }else if (matchRename.matches()) {
                             String newName = matchRename.group(1);
                             String password = matchRename.group(2);
-                            if (authService.renameUser(username, newName, password)) {
-                                server.renameUser(username, newName);
-                                out.writeUTF("/rename successful "+newName);
-                                out.flush();
+                            if (authService.renameUser(getUsername(), newName, password)) {
+                                outResponse("/rename successful");
+
+                                System.out.println("rename successful отправлено с сервера");
+                                //out.writeUTF("/rename successful");
+                                //out.flush();
+                                server.renameUser(getUsername(), newName);
+                                //username=newName;
 
                             }
 
+                        }else {
+                            System.out.println("Не разматчилось");
                         }
                     }
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 } finally {
-                    System.out.printf("Client %s disconnected%n", username);
+                    System.out.printf("Client %s disconnected%n", getUsername());
                     try {
                         socket.close();
                     } catch (IOException e) {
@@ -79,12 +85,12 @@ public class ClientHandler {
     }
 
     public void sendMessage(String userTo, String msg) throws IOException {
-        out.writeUTF(String.format(MESSAGE_SEND_PATTERN, userTo, msg));
-        out.flush();
+        outResponse(String.format(MESSAGE_SEND_PATTERN, userTo, msg));
+
     }
     public void sendUserList( String msg, String userFrom) throws IOException {
-        out.writeUTF(String.format(USER_LIST_PATTERN, msg, userFrom));
-        out.flush();
+        outResponse(String.format(USER_LIST_PATTERN, msg, userFrom));
+
     }
 
 
@@ -93,6 +99,15 @@ public class ClientHandler {
     }
 
     public void setUsername(String name){
-        this.username=name;
+        username=name;
     }
+
+
+    private synchronized void outResponse (String str)throws IOException {
+        out.writeUTF(str);
+        out.flush();
+        System.out.println("отправлено с сервера");
+    }
+
+
 }
