@@ -1,11 +1,15 @@
 package Swing;
 
 
+import HistoryUser.HistoryUser;
+
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +30,7 @@ public class Network implements Closeable {
     private String newUsername;
     private final String hostName;
     private final int port;
+    private HistoryUser historyUser;
 
     public Network(String hostName, int port, MessageSender messageSender) {
         this.hostName = hostName;
@@ -50,6 +55,7 @@ public class Network implements Closeable {
                             Message msg = new Message(matcher.group(1), getUsername(),
                                       matcher.group(2));
                             messageSender.submitMessage(msg);
+                            historyUser.writeHistory(text);
                         } else if (text.startsWith(USER_LIST_PATTERN)) {
                             // TODO обновить список подключенных пользователей
                             String [] arrMsg = text.split("\\s", 3);
@@ -75,8 +81,9 @@ public class Network implements Closeable {
         });
     }
 
-    public void sendMessageToUser(Message message) {
+    public void sendMessageToUser(Message message) throws IOException {
         sendMessage(String.format(MESSAGE_SEND_PATTERN, message.getUserTo(), message.getText()));
+        historyUser.writeHistory(String.format(MESSAGE_SEND_PATTERN, getUsername(), message.getText()));
     }
 
     private void sendMessage(String msg) {
@@ -97,9 +104,39 @@ public class Network implements Closeable {
         String response = in.readUTF();
         if (response.equals("/auth successful")) {
             this.username = username;
+
+            this.historyUser = new HistoryUser(username);
+            historyUser.createFile();
+            printHistory();
             receiver.start();
         } else {
             throw new AuthException();
+        }
+    }
+
+
+    private void printHistory () {
+        try {
+            List<String> listHistory = historyUser.readHistory();
+            if (!listHistory.isEmpty()){
+                Collections.reverse(listHistory);
+                for (String text: listHistory) {
+                    System.out.println("text from file: "+text);
+                    Matcher matcher = MESSAGE_PATTERN.matcher(text);
+                    if (matcher.matches()) {
+                        Message msg = new Message(matcher.group(1), getUsername(),
+                                matcher.group(2));
+                        messageSender.submitMessage(msg);
+                    }
+                }
+
+                //receiver.start();
+            }else{
+                System.out.println("file is empty");
+                //receiver.start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

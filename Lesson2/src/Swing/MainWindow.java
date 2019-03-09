@@ -2,6 +2,7 @@ package Swing;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.Timer;
 
@@ -75,7 +76,11 @@ public class MainWindow extends JFrame implements MessageSender {
                 textField.setText(null);
                 textField.requestFocus();
 
-                network.sendMessageToUser(msg);
+                try {
+                    network.sendMessageToUser(msg);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
 

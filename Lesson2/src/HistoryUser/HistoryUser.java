@@ -6,13 +6,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
-public class HistotyUser {
+public class HistoryUser {
     private String userName;
     private File file;
-     private File DIR;
+    private File DIR;
 
-    public HistotyUser (String userName) {
+    public HistoryUser (String userName) {
         this.userName=userName;
     }
 
@@ -50,18 +52,21 @@ public class HistotyUser {
 
     }
 
-    public void readHistory () throws IOException {
+    public List<String> readHistory () throws IOException {
         byte counter=0;
-
+        List<String> result= new LinkedList<>();
         try(ReversedLinesFileReader object = new ReversedLinesFileReader(file)) {
             String str;
-            while ((str = object.readLine()) != null && counter < 3) {
+            while ((str = object.readLine()) != null && counter < 10) {
                 System.out.println(str);
+                result.add(str);
                 counter++;
+
             }
         }catch (IOException ex) {
             System.out.println("файл не читается!!!");
         }
+        return result;
 
     }
 
