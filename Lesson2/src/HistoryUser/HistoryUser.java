@@ -38,10 +38,12 @@ public class HistoryUser {
         userName=newName;
         if (file.renameTo(new File(DIR+"\\Hystory_"+userName+".txt"))) {
             System.out.println("File rename");
+            createFile ();// если я этого не делаю он при новой записи создаст файл со старым именем пользователя и продолжет писать историю туда, а не в переименованный файл
         }else {
             System.out.println("File dont rename!!!");
         }
     }
+
 
     public void writeHistory (String msg) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
@@ -55,9 +57,9 @@ public class HistoryUser {
     public List<String> readHistory () throws IOException {
         byte counter=0;
         List<String> result= new LinkedList<>();
-        try(ReversedLinesFileReader object = new ReversedLinesFileReader(file)) {
+        try(ReversedLinesFileReader object = new ReversedLinesFileReader(file)) {// не разобралась с RandomAccessFile
             String str;
-            while ((str = object.readLine()) != null && counter < 10) {
+            while ((str = object.readLine()) != null && counter < 10) {// чтобы проще тестировать counter=10
                 System.out.println(str);
                 result.add(str);
                 counter++;

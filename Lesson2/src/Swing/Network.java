@@ -71,6 +71,7 @@ public class Network implements Closeable {
                         }else if (text.startsWith("/rename successful")){
                             username = newUsername;
                             System.out.println("response: "+text);
+                            historyUser.renameFile(newUsername);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
