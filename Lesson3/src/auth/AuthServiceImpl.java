@@ -6,18 +6,47 @@ import java.util.Map;
 
 public class AuthServiceImpl implements AuthService {
     private boolean result;
-    String url="jdbc:sqlite:authorizationUsers.db";
+    private Connection con;
+    private PreparedStatement ps;
+    private PreparedStatement checkNameExist;
+    private PreparedStatement updateUserName;
+
+    private String url="jdbc:sqlite:authorizationUsers.db";
     //String url = "jdbc:mysql://localhost:3306/authorizationusers?serverTimezone=UTC";
     //String user = "root";
     //String pass = "TO124818be";
 
     //public Map<String, String> users = new HashMap<>();
 
-    public AuthServiceImpl()  {
 
+    static {
+            try {
+                //Class.forName("com.mysql.cj.jdbc.Driver");
+                Class.forName("org.sqlite.JDBC");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+    }
+
+
+
+    public AuthServiceImpl()  {
+        try {
+            con = DriverManager.getConnection(url);
+            ps = con.prepareStatement("SELECT * FROM authorizationUsers WHERE Name = ? AND Password= ?");
+            checkNameExist = con.prepareStatement("SELECT * FROM authorizationUsers WHERE Name = ? ");
+            updateUserName = con.prepareStatement("UPDATE authorizationUsers SET Name = ? WHERE Name = ? AND Password= ?");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         /*users.put("ivan", "123");
         users.put("petr", "345");
         users.put("julia", "789");*/
+    }
+
+    @Override
+    public void close() throws Exception {
+        con.close();
     }
 
     /*@Override
@@ -29,11 +58,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean authUser(String username, String password) throws ClassNotFoundException {
 
-        //Class.forName("com.mysql.cj.jdbc.Driver");
-        Class.forName("org.sqlite.JDBC");
-        try (Connection con = DriverManager.getConnection(url)){
+
+
+        try {
             System.out.println("подключилось!");
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM authorizationUsers WHERE Name = ? AND Password= ?");
             ps.setString(1, username);
             ps.setString(2, password);
             ResultSet rst = ps.executeQuery();
@@ -52,16 +80,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean renameUser(String username, String newName, String password) throws ClassNotFoundException{
         if (authUser(username, password)) {
-            //Class.forName("com.mysql.cj.jdbc.Driver");
-            Class.forName("org.sqlite.JDBC");
 
-            try (Connection con = DriverManager.getConnection(url)) {
-                PreparedStatement checkNameExist = con.prepareStatement("SELECT * FROM authorizationUsers WHERE Name = ? ");
+            try {
                 checkNameExist.setString(1, newName);
                 ResultSet rst = checkNameExist.executeQuery();
 
                 if (!rst.next()) {
-                    PreparedStatement updateUserName = con.prepareStatement("UPDATE authorizationUsers SET Name = ? WHERE Name = ? AND Password= ?");
                     updateUserName.setString(1, newName);
                     updateUserName.setString(2, username);
                     updateUserName.setString(3, password);

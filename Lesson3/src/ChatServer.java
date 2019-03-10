@@ -19,12 +19,12 @@ public class ChatServer {
 
     private Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         ChatServer chatServer = new ChatServer();
         chatServer.start(7977);
     }
 
-    public void start(int port) {
+    public void start(int port) throws Exception {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server started!");
 
@@ -87,6 +87,8 @@ public class ChatServer {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            authService.close();
         }
     }
 
