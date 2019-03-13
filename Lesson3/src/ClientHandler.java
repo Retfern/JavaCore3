@@ -5,6 +5,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,8 +18,8 @@ public class ClientHandler {
     private static final String USER_LIST_PATTERN = "/userlist %s %s";
     private static final Pattern RENAME_PATTERN = Pattern.compile("^/rename (\\w+) (\\w+)$");
 
-
-    private final Thread handleThread;
+    private final ExecutorService handleThread;
+    //private final Thread handleThread;
     private final DataInputStream inp;
     private final DataOutputStream out;
     private final ChatServer server;
@@ -32,7 +34,8 @@ public class ClientHandler {
         this.inp = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
 
-        this.handleThread = new Thread(new Runnable() {
+        this.handleThread = Executors.newSingleThreadExecutor();
+        handleThread.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -53,10 +56,7 @@ public class ClientHandler {
                                 outResponse("/rename successful");
 
                                 System.out.println("rename successful отправлено с сервера");
-                                //out.writeUTF("/rename successful");
-                                //out.flush();
                                 server.renameUser(getUsername(), newName);
-                                //username=newName;
 
                             }
 
@@ -81,7 +81,8 @@ public class ClientHandler {
                 }
             }
         });
-        handleThread.start();
+       // handleThread.start() ;
+        handleThread.shutdown();
     }
 
     public void sendMessage(String userTo, String msg) throws IOException {
